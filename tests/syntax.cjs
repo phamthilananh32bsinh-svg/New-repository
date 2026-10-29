@@ -1,0 +1,4 @@
+const fs=require('fs'),path=require('path'),ts=require('/opt/nvm/versions/node/v22.16.0/lib/node_modules/typescript');
+let errors=[];
+function walk(dir){for(const entry of fs.readdirSync(dir,{withFileTypes:true})){const p=path.join(dir,entry.name);if(entry.isDirectory())walk(p);else if(/\.tsx?$/.test(p)){const src=fs.readFileSync(p,'utf8');const out=ts.transpileModule(src,{fileName:p,reportDiagnostics:true,compilerOptions:{jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ESNext}});for(const d of out.diagnostics||[])if(d.category===ts.DiagnosticCategory.Error)errors.push(p+': '+ts.flattenDiagnosticMessageText(d.messageText,' '));}}}
+walk('src');console.log('TypeScript syntax/transpile check:',errors.length?'FAIL':'PASS');errors.forEach(console.log);process.exitCode=errors.length?1:0;
