@@ -566,7 +566,23 @@ body[data-focus-lesson="true"] #v18-lesson-strip{display:block}
 .v30-vocab-frame{display:block;width:100%;height:calc(100dvh - 170px);min-height:650px;border:0;border-radius:20px;background:#f1fcf5}
 .v30-vocab-shell{width:100%;max-width:100%;padding:0;margin:0}
 @media(max-width:700px){.v30-vocab-frame{height:calc(100dvh - 125px);min-height:570px;border-radius:12px}}
-</style></head>
+</style><style>
+.pdf-study-library{margin-top:24px;padding:20px;border:1px solid #a8e6ce;border-radius:22px;background:rgba(255,255,255,.92);box-shadow:0 8px 30px #145e3b12}
+.pdf-study-library h3{font-size:1.3rem;font-weight:800;color:#086b50;margin-bottom:8px}
+.pdf-study-library p{color:#44576a;margin:8px 0 16px}
+.pdf-study-tabs{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}
+.pdf-study-tab{background:#f4fbf7;border:1px solid #a9dfc9;border-radius:12px;padding:11px 13px;text-align:left;color:#245343;cursor:pointer;flex:1 1 240px;font-weight:650}
+.pdf-study-tab.active{background:#c9f7e3;border-color:#20bd86;box-shadow:0 0 0 2px #20bd8622}
+.pdf-study-tab:focus-visible{outline:3px solid #15966b;outline-offset:2px}
+.pdf-study-frame{overflow:hidden;border:1px solid #d2e9df;border-radius:12px;background:#fff}
+.pdf-study-frame iframe{width:100%;height:min(78vh,850px);min-height:460px;border:0;display:block}
+.pdf-study-fallback a{color:#06795b;text-decoration:underline}
+@media(max-width:640px){.pdf-study-library{padding:12px}.pdf-study-frame iframe{min-height:65vh;height:65vh}.pdf-study-tab{flex-basis:100%}}
+</style>
+<style id="v31-infographic-styles">
+.v31-board{margin:22px 0;color:#174f42}.v31-intro{padding:20px 24px;border:1px solid #b8e7d1;border-radius:22px;background:linear-gradient(120deg,#e6fff1,#fffef5)}.v31-intro h3{margin:6px 0;font-size:clamp(22px,3vw,32px)}.v31-intro p{margin:0}.v31-gallery{display:grid;gap:22px;margin-top:20px}.v31-page{background:#fff;border:1px solid #c9e8d9;border-radius:18px;padding:14px;box-shadow:0 10px 30px #1b61421c}.v31-page h4{font-size:18px;margin:2px 4px 12px}.v31-page img{display:block;width:100%;height:auto;border-radius:9px;cursor:zoom-in}.v31-page button{margin-top:12px;padding:10px 16px;background:#dcfaeb;border:1px solid #79cfa6;border-radius:12px;color:#075d46;font-weight:700;cursor:pointer}.v31-lightbox{position:fixed;inset:0;z-index:2147483646;background:#061b16ed;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:12px}.v31-lightbox.open{display:flex}.v31-lightbox img{max-width:100%;max-height:calc(100vh - 105px);object-fit:contain}.v31-controls{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;color:white}.v31-controls button{background:white;border:0;border-radius:9px;padding:10px 16px;font-weight:700;cursor:pointer}.v31-controls button:focus-visible,.v31-page button:focus-visible{outline:3px solid #18b87d;outline-offset:3px}@media(max-width:600px){.v31-page{padding:8px}.v31-intro{padding:16px}}
+</style>
+</head>
 <body>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="cg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".95"/><stop offset=".45" stop-color="#dcfbee" stop-opacity=".7"/><stop offset="1" stop-color="#86e6c3" stop-opacity=".78"/></linearGradient></defs><symbol id="clv" viewBox="0 0 24 24"><g transform="translate(12 13)"><path d="M0 0Q1 6 3 10" stroke="#34a37a" fill="none" stroke-width="1.2" stroke-linecap="round"/><g fill="url(#cg)" stroke="#fff" stroke-width=".7" stroke-linejoin="round"><path id="lf" d="M0 0C-6-4-6-11-2.6-11C-1-11 0-10 0-8.8C0-10 1-11 2.6-11C6-11 6-4 0 0Z"/><path d="M0 0C-6-4-6-11-2.6-11C-1-11 0-10 0-8.8C0-10 1-11 2.6-11C6-11 6-4 0 0Z" transform="rotate(120)"/><path d="M0 0C-6-4-6-11-2.6-11C-1-11 0-10 0-8.8C0-10 1-11 2.6-11C6-11 6-4 0 0Z" transform="rotate(240)"/></g><path d="M0 0V-6M0 0L5 3M0 0L-5 3" stroke="#fff" stroke-width=".6" opacity=".7"/><g fill="#fff" opacity=".92"><ellipse cx="-2.6" cy="-8.2" rx="1.4" ry=".8"/><ellipse cx="-2.6" cy="-8.2" rx="1.4" ry=".8" transform="rotate(120)"/><ellipse cx="-2.6" cy="-8.2" rx="1.4" ry=".8" transform="rotate(240)"/></g></g></symbol></svg>
@@ -930,6 +946,37 @@ function stepLessonContentV19(){
   });
   draw();
 }
+
+function renderV31Infographic(){
+  const section=document.querySelector("#step .v14-discover");
+  if(!section || document.getElementById("v31-visual-lessons"))return;
+  const board=document.createElement("section");
+  board.id="v31-visual-lessons";
+  board.className="v31-board";
+  board.setAttribute("aria-label","Ba infographic quang hợp do giáo viên cung cấp");
+  const pages=[
+    ["Trang 1 · Tổng quan và hai giai đoạn quang hợp","infographics/1.png"],
+    ["Trang 2 · C3, C4, CAM và sản phẩm quang hợp","infographics/2.png"],
+    ["Trang 3 · Các yếu tố ảnh hưởng và năng suất cây trồng","infographics/3.png"]
+  ];
+  board.innerHTML='<div class="v31-intro"><span>🌿 BIOLOGY WITH JESSICA · LESSON 4.2</span><h3>Infographic · Sơ đồ kiến thức</h3><p>3 trang infographic do giáo viên cung cấp. Nhấn vào ảnh để phóng to.</p></div><div class="v31-gallery">'+pages.map((p,i)=>'<article class="v31-page"><h4>'+p[0]+'</h4><img src="'+p[1]+'" alt="'+p[0]+'" loading="'+(i===0?'eager':'lazy')+'" data-v31-page="'+i+'"><button type="button" data-v31-page="'+i+'">🔍 Phóng to trang '+(i+1)+'</button></article>').join('')+'</div>';
+  const library=section.querySelector("#v14-library");
+  if(library)library.before(board);else section.append(board);
+  const lightbox=document.createElement("div");
+  lightbox.className="v31-lightbox";
+  lightbox.setAttribute("role","dialog");
+  lightbox.setAttribute("aria-modal","true");
+  lightbox.setAttribute("aria-label","Xem infographic phóng to");
+  lightbox.innerHTML='<div class="v31-controls"><button type="button" data-action="prev">← Trước</button><span class="v31-count"></span><button type="button" data-action="next">Tiếp →</button><button type="button" data-action="close">✕ Đóng</button></div><img alt="Infographic phóng to">';
+  document.body.appendChild(lightbox);
+  let current=0,returnFocus=null;
+  const image=lightbox.querySelector("img"),count=lightbox.querySelector(".v31-count");
+  function show(i){current=(i+pages.length)%pages.length;image.src=pages[current][1];image.alt=pages[current][0];count.textContent=(current+1)+" / "+pages.length;}
+  function close(){lightbox.classList.remove("open");image.removeAttribute("src");document.removeEventListener("keydown",onKey);if(returnFocus&&returnFocus.isConnected)returnFocus.focus();}
+  function onKey(e){if(e.key==="Escape")close();if(e.key==="ArrowLeft")show(current-1);if(e.key==="ArrowRight")show(current+1);}
+  board.addEventListener("click",e=>{const target=e.target.closest("[data-v31-page]");if(!target)return;returnFocus=target;show(Number(target.dataset.v31Page));lightbox.classList.add("open");lightbox.querySelector('[data-action="close"]').focus();document.addEventListener("keydown",onKey);});
+  lightbox.addEventListener("click",e=>{const action=e.target.closest("[data-action]")?.dataset.action;if(action==="close")close();if(action==="prev")show(current-1);if(action==="next")show(current+1);if(e.target===lightbox)close();});
+}
 function stepInfographicV19(){
   stepDiscover();
   var root=$("step");
@@ -939,6 +986,7 @@ function stepInfographicV19(){
     if(card.id!=="v14-library")card.remove();
   });
   var heading=section.querySelector(".v14-head");
+  renderV31Infographic();
   if(heading)heading.innerHTML='<span class="v14-tag">LESSON 4.2 · PART 3 OF 4</span><h2>🗺️ Infographic · Sơ đồ kiến thức</h2><p>Tóm tắt trực quan nội dung trọng tâm, hỗ trợ ôn tập độc lập.</p>';
   var library=section.querySelector("#v14-library");
   if(library){
@@ -1152,6 +1200,43 @@ const PLACE = [
 (function(){ var d=document.querySelector(".decor"); if(!d){ return; } d.insertAdjacentHTML("beforeend", PLACE.map(function(x,i){ return '<img class="deco2'+(i%3===1?' float':'')+'" alt="" src="'+IM[x[0]]+'" style="'+x[1]+';animation-delay:-'+i+'s">'; }).join("")); })();
 (function(){ var d=document.querySelector(".decor"), h=""; [[3,45,90],[46,86,60],[91,32,72],[30,5,40],[72,62,50]].forEach(function(o,i){ h+='<span class="orb" style="left:'+o[0]+'%;top:'+o[1]+'%;width:'+o[2]+'px;height:'+o[2]+'px;animation-delay:-'+i*1.5+'s"></span>'; }); for(var i=0;i<30;i++){ h+='<span class="spark" style="left:'+(Math.random()*96).toFixed(1)+'%;top:'+(Math.random()*92).toFixed(1)+'%;font-size:'+(10+Math.random()*14).toFixed(0)+'px;animation-delay:-'+(Math.random()*3).toFixed(1)+'s">✦</span>'; } if(d){ d.insertAdjacentHTML("beforeend",h); } })();
 function updMission(){ var a=attempts(), best=0; a.forEach(function(x){ best=Math.max(best,Math.round(x.score/x.total*100)); }); var g=store("bio42_gamebest")||0; var b=$("mbar"), t=$("mtxt"); if(b){ b.style.width=best+"%"; } if(t){ t.textContent = a.length ? "Quiz best: "+best+"% · Game best: "+g+" pts" : "No quiz yet. Finish Step 4 to start your progress bar."; } }
+
+const originalStepCorePdf = stepCore;
+stepCore = function () {
+  originalStepCorePdf();
+  const mount = document.getElementById('step');
+  if (!mount) return;
+  const resources = [
+    {file:'photosynthesis-worksheet.pdf',title:'Photosynthesis Worksheet',detail:'Phiếu học tập tiếng Anh · 17 trang'},
+    {file:'campbell-quang-hop-vietnamese.pdf',title:'Campbell – Chương 10: Quang hợp',detail:'Sách tham khảo tiếng Việt · 21 trang'},
+    {file:'campbell-photosynthesis-english.pdf',title:'Campbell – Chapter 10: Photosynthesis',detail:'Sách tham khảo tiếng Anh · 25 trang'}
+  ];
+  const section = document.createElement('section');
+  section.className = 'pdf-study-library';
+  section.innerHTML = '<h3>📖 Thư viện PDF · Lesson 4.2 – Bước 2</h3><p>Chọn tài liệu bên dưới để đọc trực tiếp. Có thể phóng to, chuyển trang hoặc mở toàn màn hình bằng thanh công cụ của trình đọc PDF.</p><div class="pdf-study-tabs" role="group" aria-label="Chọn tài liệu PDF"></div><div class="pdf-study-frame"><iframe title="Tài liệu PDF quang hợp" loading="lazy"></iframe></div><p class="pdf-study-fallback"><a target="_blank" rel="noopener noreferrer">Mở tài liệu trong tab mới nếu trình duyệt không hiển thị PDF</a></p>';
+  mount.appendChild(section);
+  const tabs=section.querySelector('.pdf-study-tabs');
+  const frame=section.querySelector('iframe');
+  const link=section.querySelector('a');
+  const buttons=resources.map((r,i)=>{
+    const b=document.createElement('button');
+    b.type='button';
+    b.className='pdf-study-tab';
+    b.textContent=(i+1)+'. '+r.title+' · '+r.detail;
+    b.addEventListener('click',()=>selectPdf(i));
+    tabs.appendChild(b);
+    return b;
+  });
+  function selectPdf(index){
+    const url='/resources/'+encodeURIComponent(resources[index].file);
+    frame.src=url+'#toolbar=1&navpanes=0';
+    frame.title=resources[index].title;
+    link.href=url;
+    buttons.forEach((b,i)=>{b.classList.toggle('active',i===index);b.setAttribute('aria-pressed',String(i===index));});
+  }
+  selectPdf(0);
+};
+
 $("brand").innerHTML = C+'<span>Team Sinh cô Jessica</span>'+C;
 render();
 </script>

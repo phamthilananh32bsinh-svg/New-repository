@@ -10,3 +10,5 @@ if (!existsSync('vocab/dist/index.html')) throw new Error('Vocabulary build miss
 mkdirSync('dist/vocab', { recursive: true });
 copyFileSync('index.html', 'dist/index.html');
 cpSync('vocab/dist', 'dist/vocab', { recursive: true });
+cpSync('resources', 'dist/resources', { recursive: true });
+cpSync('infographics', 'dist/infographics', { recursive: true });

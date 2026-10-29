@@ -209,6 +209,10 @@ export default function App() {
           <span aria-hidden="true" className="text-4xl sm:text-5xl">🌿</span>
         </div>
       </section>
+      <nav aria-label="Additional vocabulary practice" className="v29-practice-nav max-w-7xl mx-auto w-full px-4 sm:px-8 pt-4 flex flex-wrap gap-2">
+        <button onClick={() => {setCurrentTab('truefalse');setActiveRound(null);}} aria-pressed={currentTab === 'truefalse'} className={`px-4 py-3 rounded-xl font-extrabold border ${currentTab === 'truefalse' ? 'bg-emerald-700 text-white border-emerald-700' : 'bg-white text-emerald-800 border-emerald-200'}`}>✓ True / False</button>
+        <button onClick={() => {setCurrentTab('fill');setActiveRound(null);}} aria-pressed={currentTab === 'fill'} className={`px-4 py-3 rounded-xl font-extrabold border ${currentTab === 'fill' ? 'bg-emerald-700 text-white border-emerald-700' : 'bg-white text-emerald-800 border-emerald-200'}`}>✎ Fill in the Blanks</button>
+      </nav>
       {/* Main Content Areas */}
       <main className="flex-1 pb-16">
         {currentTab === 'truefalse' && <VocabularyPractice mode="truefalse" />}
