@@ -904,47 +904,8 @@ const DISCOVER_SLIDES=[
 ["5 · Evidence Matters","Where does the released O₂ come from?","Oxygen isotope tracing shows that the O₂ released in oxygenic photosynthesis comes from water."],
 ["6 · Remember","Explain photosynthesis in one sentence","Plants transform light energy into chemical energy stored in organic compounds."]
 ];
-function stepLessonContentV19(){
-  stepCore();
-  const root=$("step");
-  const header=document.createElement("section");
-  header.className="v14-discover v27-lecture";
-  header.innerHTML=`<div class="v14-head"><span class="v14-tag">LESSON 4.2 · PART 2 OF 4</span><h2>📽️ Lesson Content · Nội dung bài học</h2><p>Bài giảng tự học · Study at your own pace · 11 slides</p></div>
-  <div class="v27-slide-viewer" aria-label="Self-study lecture">
-    <div class="v27-slide" id="v27-slide" aria-live="polite"></div>
-    <div class="v27-slide-controls">
-      <button type="button" id="v27-prev" aria-label="Previous slide">← Previous</button>
-      <span id="v27-count" aria-live="polite">1 / 11</span>
-      <button type="button" id="v27-next" aria-label="Next slide">Next →</button>
-    </div>
-    <p class="v27-note">Dùng ← → để chuyển slide khi đang chọn trình chiếu. File PowerPoint chỉnh sửa được tải riêng bên dưới.</p>
-    <a class="v27-download" href="Biology_Lesson_4_2_Photosynthesis_Self_Study.pptx" download>⬇ Download PowerPoint (.pptx)</a>
-    <p class="v27-note">Nếu mở HTML riêng lẻ, đặt file .pptx cùng thư mục với file HTML để nút tải hoạt động. Bài giảng bên trên vẫn hoạt động ngoại tuyến.</p>
-  </div>
-  <div class="v14-card"><h3>📚 Core knowledge · Kiến thức trọng tâm</h3><p>Đọc thêm phần giải thích bên dưới sau khi hoàn thành bài giảng. Bài giảng sử dụng nội dung đối chiếu từ SGK Sinh học 11 (Bài 4) và Campbell Biology (Chapter 10).</p></div>`;
-  root.prepend(header);
-  const slides=[{"title": "PHOTOSYNTHESIS IN PLANTS", "subtitle": "Lesson 4.2 · Self-study lecture", "body": "How do plants convert light into chemical energy?"}, {"title": "LEARNING GOALS", "subtitle": "After this lesson, you can…", "body": "Define photosynthesis; locate it in the chloroplast; explain the light reactions and Calvin cycle; compare C3, C4 and CAM adaptations; interpret environmental factors."}, {"title": "THE BIG PICTURE", "subtitle": "Energy and matter", "body": "Light energy drives the formation of organic compounds from CO₂ and H₂O. Oxygen released during photosynthesis originates from water."}, {"title": "OVERALL EQUATION", "subtitle": "Two useful representations", "body": "Simplified: 6CO₂ + 6H₂O → C₆H₁₂O₆ + 6O₂ (light)\nExpanded: 6CO₂ + 12H₂O → C₆H₁₂O₆ + 6O₂ + 6H₂O (light)\nThese equations summarize net changes, not every biochemical step."}, {"title": "INSIDE THE CHLOROPLAST", "subtitle": "Structure supports function", "body": "Thylakoid membranes contain photosystems and the electron transport chain. The stroma contains enzymes for the Calvin cycle. Chlorophyll absorbs light."}, {"title": "LIGHT REACTIONS", "subtitle": "Convert light energy", "body": "Location: thylakoid membranes.\nInputs: light, H₂O, ADP + Pi, NADP⁺.\nOutputs: O₂, ATP, NADPH.\nWater supplies electrons; oxygen is released as a by-product."}, {"title": "CALVIN CYCLE", "subtitle": "Use ATP and NADPH", "body": "Location: stroma.\nCO₂ is fixed to RuBP by rubisco; carbon compounds are reduced using ATP and NADPH; RuBP is regenerated. Net sugar precursor: G3P."}, {"title": "C3 · C4 · CAM", "subtitle": "Three carbon-fixation strategies", "body": "C3: Calvin cycle begins with rubisco fixation.\nC4: initial CO₂ fixation and Calvin cycle are separated spatially.\nCAM: initial CO₂ fixation and Calvin cycle are separated temporally."}, {"title": "ENVIRONMENTAL FACTORS", "subtitle": "What changes photosynthesis rate?", "body": "Light intensity, CO₂ availability, temperature and water supply can limit photosynthesis. A plateau suggests another factor has become limiting."}, {"title": "CHECK YOUR UNDERSTANDING", "subtitle": "Pause · Recall · Explain", "body": "1. Where do the light reactions occur?\n2. Where does released O₂ originate?\n3. What do ATP and NADPH supply to the Calvin cycle?\n4. What is the net three-carbon sugar product?"}, {"title": "ANSWERS & NEXT STEPS", "subtitle": "Self-check", "body": "1. Thylakoid membranes. 2. Water. 3. Energy and reducing power. 4. G3P.\nNext: Infographic → Multiple-choice Review.\nSources: Biology 11 textbook (lesson 4); Campbell Biology, Chapter 10."}];
-  let current=0;
-  const stage=header.querySelector("#v27-slide"),counter=header.querySelector("#v27-count");
-  const prev=header.querySelector("#v27-prev"),next=header.querySelector("#v27-next");
-  function draw(){
-    const slide=slides[current];
-    stage.replaceChildren();
-    const kicker=document.createElement("div");kicker.className="v27-kicker";kicker.textContent="BIOLOGY IN ENGLISH · LESSON 4.2";
-    const title=document.createElement("h3");title.textContent=slide.title;
-    const sub=document.createElement("h4");sub.textContent=slide.subtitle;
-    const body=document.createElement("p");body.textContent=slide.body;
-    stage.append(kicker,title,sub,body);
-    counter.textContent=(current+1)+" / "+slides.length;
-    prev.disabled=current===0;next.disabled=current===slides.length-1;
-  }
-  prev.addEventListener("click",()=>{if(current>0){current--;draw();}});
-  next.addEventListener("click",()=>{if(current<slides.length-1){current++;draw();}});
-  header.querySelector(".v27-slide-viewer").addEventListener("keydown",e=>{
-    if(e.key==="ArrowRight"&&current<slides.length-1){current++;draw();e.preventDefault();}
-    if(e.key==="ArrowLeft"&&current>0){current--;draw();e.preventDefault();}
-  });
-  draw();
+function stepLessonContentV19() {
+  document.getElementById('step').innerHTML = '';
 }
 
 function renderV31Infographic(){
@@ -1092,14 +1053,7 @@ function stepVocab(){
 }
 
 function stepCore(){
-  function li(t){ return '<li class="flex gap-2 items-start">'+C+'<span>'+t+'</span></li>'; }
-  $("step").innerHTML = '<div class="grid gap-4 md:grid-cols-2">'+
-   '<article class="glass p-5"><h3 class="font-black text-xl mb-1">Light-dependent reactions</h3><p class="text-sm mb-3" style="color:var(--muted)">Capture light energy</p><ul class="flex flex-col gap-2">'+
-   li("<b>Where:</b> thylakoid membranes of the chloroplast.")+li("<b>Inputs:</b> light, water (H₂O), ADP + Pi, NADP⁺.")+li("Chlorophyll absorbs light, and water is split (photolysis) to release <b>oxygen (O₂)</b>.")+li("<b>Outputs:</b> ATP, NADPH and O₂.")+'</ul></article>'+
-   '<article class="glass p-5"><h3 class="font-black text-xl mb-1">Calvin cycle (light-independent)</h3><p class="text-sm mb-3" style="color:var(--muted)">Build sugar</p><ul class="flex flex-col gap-2">'+
-   li("<b>Where:</b> the stroma.")+li("<b>Inputs:</b> carbon dioxide (CO₂), ATP and NADPH.")+li("The enzyme <b>RuBisCO</b> fixes CO₂ onto RuBP, then ATP and NADPH reduce it to <b>G3P</b>.")+li("G3P is used to make glucose, and RuBP is regenerated.")+'</ul></article></div>'+
-   '<div class="glass p-4 mt-4 text-center font-bold">6 CO₂ + 6 H₂O + light energy → C₆H₁₂O₆ + 6 O₂</div>'+
-   '<p class="mt-4 text-sm font-semibold flex items-center gap-2" style="color:var(--muted)">'+C+'Content generated by AI, please cross-check with official textbooks.</p>';
+  document.getElementById("step").innerHTML = "";
 }
 
 let g = null;
