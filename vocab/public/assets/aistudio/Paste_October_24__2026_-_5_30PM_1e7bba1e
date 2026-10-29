@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photosynthesis - Biology with Jessica</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Quicksand:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: url('https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') no-repeat center center fixed;
+            background-size: cover;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+        h1, h2, h3, .title-font { font-family: 'Baloo 2', cursive; }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+        }
+        
+        /* Z-INDEX ARCHITECTURE */
+        #gameAreaWrapper { position: relative; z-index: 10; }
+        .col-container { position: relative; z-index: 20; }
+        .vocab-card { position: relative; z-index: 30; transition: transform 0.2s; }
+        .vocab-card:hover { transform: translateY(-2px); }
+        
+        /* SVG Absolute Alignment */
+        #svgContainer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 40;
+        }
+        
+        .connect-line { pointer-events: auto; cursor: pointer; transition: stroke 0.3s, stroke-width 0.2s; }
+        .connect-line:hover { stroke-width: 6; stroke: #ff4757; }
+        
+        .connect-dot {
+            width: 20px; height: 20px; background-color: #f39c12; border-radius: 50%;
+            cursor: pointer; position: absolute; top: 50%; transform: translateY(-50%);
+            z-index: 50; transition: all 0.2s;
+            box-shadow: 0 0 0 4px rgba(243, 156, 18, 0.3);
+        }
+        .connect-dot:hover { transform: translateY(-50%) scale(1.2); background-color: #e67e22; box-shadow: 0 0 0 6px rgba(230, 126, 34, 0.4); }
+        .connect-dot.active { background-color: #ff9f43; box-shadow: 0 0 0 6px rgba(255, 159, 67, 0.5); transform: translateY(-50%) scale(1.2); }
+        .connect-dot.locked-dot { background-color: #ff4757; box-shadow: 0 0 0 4px rgba(255, 71, 87, 0.3); }
+        
+        .dot-left { right: -10px; }
+        .dot-right { left: -10px; }
+
+        .btn-3d { transition: all 0.1s; box-shadow: 0 6px 0 var(--shadow-color, #27ae60); }
+        .btn-3d:active { transform: translateY(6px); box-shadow: 0 0 0 var(--shadow-color, #27ae60); }
+        .btn-3d:disabled { transform: translateY(6px); box-shadow: 0 0 0 var(--shadow-color, #27ae60); filter: grayscale(1); cursor: not-allowed; }
+        
+        .watermark {
+            position: fixed; bottom: 10px; right: 15px; opacity: 0.4;
+            font-family: 'Baloo 2'; font-weight: 800; font-size: 1.5rem;
+            color: #2f3542; z-index: 0; pointer-events: none;
+            text-shadow: 1px 1px 2px white;
+        }
+
+        .toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: #ff4757; color: white; padding: 12px 24px; border-radius: 30px;
+            font-weight: bold; box-shadow: 0 5px 15px rgba(255,71,87,0.4);
+            z-index: 1000; opacity: 0; transition: opacity 0.3s; pointer-events: none; font-size: 1.1rem;
+        }
+
+        .toast.success { background: #2ed573; box-shadow: 0 5px 15px rgba(46,213,115,0.4); }
+
+        .combo-flame { animation: flameFlicker 0.5s infinite alternate; }
+        @keyframes flameFlicker { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.2); opacity: 1; text-shadow: 0 0 10px #ff9f43; } }
+        
+        .custom-scroll::-webkit-scrollbar { width: 8px; }
+        .custom-scroll::-webkit-scrollbar-track { background: #f1f2f6; border-radius: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #7bed9f; border-radius: 10px; }
+        
+        .card-container { display: flex; position: relative; width: 100%; align-items: center; }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div id="toastMessage" class="toast"></div>
+    <div class="watermark">✨ Team Sinh cô Jessica</div>
+
+    <!-- Header -->
+    <nav class="fixed top-0 left-0 w-full p-4 flex justify-between items-center z-[100] pointer-events-none">
+        <div class="glass-panel px-4 py-2 flex items-center gap-2 pointer-events-auto shadow-md">
+            <span class="text-2xl">🌱</span>
+            <span class="title-font font-bold text-green-600 text-lg">Biology 11</span>
+        </div>
+        <div class="flex gap-2 pointer-events-auto">
+            <button id="btnToggleMusic" class="glass-panel w-12 h-12 flex items-center justify-center text-xl text-gray-600 hover:text-green-500 transition-colors shadow-md">
+                <i class="fas fa-music"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- SCREEN 1: SPLASH SCREEN -->
+    <div id="screenSplash" class="min-h-screen flex items-center justify-center p-4 relative z-10">
+        <div class="glass-panel max-w-2xl w-full p-8 text-center relative overflow-hidden">
+            <div class="absolute -top-10 -right-10 text-9xl opacity-10">🌿</div>
+            <div class="absolute -bottom-10 -left-10 text-9xl opacity-10">🔬</div>
+            
+            <div class="inline-block bg-green-100 text-green-700 px-4 py-1 rounded-full text-sm font-bold mb-4 border border-green-200 shadow-sm">
+                ✨ Biology with Jessica
+            </div>
+            
+            <h1 class="text-5xl md:text-6xl font-extrabold text-green-600 mb-2 title-font drop-shadow-sm">
+                PHOTOSYNTHESIS
+            </h1>
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-700 mb-4 title-font">
+                Quang hợp ở thực vật
+            </h2>
+            
+            <p class="text-gray-500 mb-8 font-semibold">
+                Khám phá thế giới thực vật kì diệu! <br> Discover the magic plant world!
+            </p>
+
+            <div class="max-w-xs mx-auto mb-8 text-left bg-white/60 p-5 rounded-2xl border border-gray-100 shadow-inner">
+                <label class="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Tên của bạn / Your Name:</label>
+                <input type="text" id="playerName" class="w-full px-4 py-3 rounded-xl border-2 border-green-300 focus:border-green-500 focus:outline-none font-bold text-center text-xl text-green-700 placeholder-green-300" placeholder="Nhập tên...">
+            </div>
+
+            <button id="btnStartGame" class="btn-3d bg-gradient-to-r from-green-500 to-green-600 text-white font-black text-2xl px-10 py-4 rounded-2xl w-full max-w-xs mx-auto flex items-center justify-center gap-3" style="--shadow-color: #218c53;">
+                <i class="fas fa-play"></i> BẮT ĐẦU NGAY
+            </button>
+            
+            <!-- Leaderboard Mini -->
+            <div class="mt-10 border-t-2 border-gray-200 pt-6">
+                <h3 class="title-font text-xl font-bold text-gray-700 mb-3"><i class="fas fa-trophy text-yellow-500"></i> Bảng Vàng (Top 5)</h3>
+                <div id="miniLeaderboard" class="text-sm font-semibold flex flex-col gap-2 max-w-sm mx-auto">
+                    <!-- Data here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCREEN 2: ROUND SELECTION -->
+    <div id="screenRoundSelect" class="min-h-screen items-center justify-center p-4 hidden mt-16 relative z-10">
+        <div class="glass-panel max-w-5xl w-full p-8 text-center">
+            <h2 class="text-4xl font-bold text-blue-600 mb-4 title-font drop-shadow-sm">Chọn Vòng Chơi / Select Round</h2>
+            <div class="flex items-center justify-center gap-4 mb-8 bg-blue-50 p-4 rounded-2xl inline-flex mx-auto border-2 border-blue-200 shadow-sm">
+                <span class="font-bold text-gray-700 text-lg"><i class="fas fa-exchange-alt text-blue-500"></i> Chế độ / Mode:</span>
+                <select id="gameModeSelect" class="bg-white border-2 border-blue-400 rounded-xl px-4 py-2 font-bold text-blue-700 focus:outline-none text-lg cursor-pointer">
+                    <option value="en-vi">Anh ➡️ Việt (EN to VN)</option>
+                    <option value="vi-en">Việt ➡️ Anh (VN to EN)</option>
+                </select>
+            </div>
+
+            <div id="roundSelectGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[55vh] overflow-y-auto p-4 custom-scroll text-left">
+                <!-- Buttons injected here -->
+            </div>
+            
+            <div class="mt-8 flex justify-between items-center px-6 bg-white/70 rounded-2xl p-4 border border-gray-100 shadow-sm">
+                <div class="text-xl font-bold text-gray-700">
+                    Người chơi: <span id="displayPlayerName" class="text-blue-600"></span>
+                </div>
+                <div class="text-xl font-bold text-gray-700">
+                    Tổng điểm: <span id="displayTotalScore" class="text-green-600 text-3xl title-font">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCREEN 3: GAMEPLAY -->
+    <div id="screenGame" class="min-h-screen flex-col items-center py-24 px-4 hidden relative z-10">
+        <div class="w-full max-w-6xl">
+            <!-- Game Header Info -->
+            <div class="flex flex-wrap justify-between items-end mb-6 gap-4">
+                <div class="glass-panel px-6 py-4 border-l-8 border-blue-500 flex-1">
+                    <h2 id="currentRoundTitle" class="text-3xl font-bold title-font text-gray-800 drop-shadow-sm">Vòng 1</h2>
+                    <p class="text-md text-gray-600 font-semibold mt-1"><i class="fas fa-lightbulb text-yellow-500"></i> Hướng dẫn: Bấm vào chấm màu cam để nối. Bạn được đổi đáp án 1 lần!</p>
+                </div>
+                
+                <div class="flex gap-4">
+                    <div class="glass-panel px-6 py-3 text-center min-w-[120px]">
+                        <div class="text-sm text-gray-500 uppercase font-black tracking-widest">Combo</div>
+                        <div id="comboDisplay" class="text-3xl font-bold text-orange-500 title-font">x0</div>
+                    </div>
+                    <div class="glass-panel px-6 py-3 text-center border-b-8 border-green-500 min-w-[150px]">
+                        <div class="text-sm text-gray-500 uppercase font-black tracking-widest">Điểm / Score</div>
+                        <div id="scoreDisplay" class="text-4xl font-bold text-green-600 title-font">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Game Area -->
+            <div class="glass-panel p-8 w-full relative border-2 border-white shadow-2xl" id="gameAreaWrapper">
+                <!-- Tiêu đề cột -->
+                <div class="flex justify-between mb-8 relative z-20">
+                    <div id="colTitleA" class="w-[45%] text-white text-center py-3 rounded-xl font-bold text-2xl shadow-md title-font tracking-wide"></div>
+                    <div id="colTitleB" class="w-[45%] text-white text-center py-3 rounded-xl font-bold text-2xl shadow-md title-font tracking-wide"></div>
+                </div>
+
+                <!-- SVG Container for Lines -->
+                <svg id="svgContainer"></svg>
+
+                <div id="gameArea" class="flex justify-between relative min-h-[400px]">
+                    <div id="colA" class="w-[45%] flex flex-col gap-4 col-container z-20"></div>
+                    <div id="colB" class="w-[45%] flex flex-col gap-4 col-container z-20"></div>
+                </div>
+            </div>
+            
+            <div class="mt-10 text-center">
+                <button id="btnSubmit" class="btn-3d bg-yellow-400 text-yellow-900 font-black text-2xl px-16 py-5 rounded-full shadow-xl mx-auto flex items-center justify-center gap-3 transition-all" style="--shadow-color: #d35400;" disabled>
+                    <i class="fas fa-check-circle text-3xl"></i> CHẤM ĐIỂM / SUBMIT
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCREEN 4: RESULT OVERLAY -->
+    <div id="overlayResult" class="fixed inset-0 bg-black/80 z-[100] hidden items-center justify-center p-4 backdrop-blur-md">
+        <div class="glass-panel w-full max-w-4xl p-10 text-center transform scale-95 transition-transform duration-300" id="resultModal">
+            <h2 id="resultMsg" class="text-5xl font-black title-font mb-2 drop-shadow-md"></h2>
+            <p id="resultSubMsg" class="text-gray-600 font-bold text-lg mb-8"></p>
+            
+            <div class="bg-gray-50 rounded-3xl p-6 mb-8 border-4 border-white shadow-inner">
+                <div class="grid grid-cols-2 gap-8 text-left">
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-green-100 text-center">
+                        <p class="text-gray-500 text-sm font-bold uppercase tracking-widest">Điểm vòng này / Round Score</p>
+                        <p class="text-5xl font-black text-green-500 title-font mt-2" id="roundScoreFinal">0</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl shadow-sm border border-blue-100 text-center">
+                        <p class="text-gray-500 text-sm font-bold uppercase tracking-widest">Tổng điểm / Total Score</p>
+                        <p class="text-5xl font-black text-blue-600 title-font mt-2" id="totalScoreFinal">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Review Board -->
+            <div class="max-h-[35vh] overflow-y-auto bg-white rounded-2xl border-2 border-gray-200 p-4 mb-8 custom-scroll text-left text-base shadow-inner" id="reviewBoard">
+                <!-- Detailed results injected here -->
+            </div>
+            
+            <div class="flex gap-6 justify-center">
+                <button id="btnNextRound" class="btn-3d bg-blue-500 text-white font-black text-xl px-8 py-4 rounded-2xl flex-1 shadow-lg" style="--shadow-color: #2980b9;">
+                    <i class="fas fa-forward"></i> CHƠI TIẾP VÒNG KHÁC
+                </button>
+                <button id="btnStopAndSave" class="btn-3d bg-red-500 text-white font-black text-xl px-8 py-4 rounded-2xl flex-1 shadow-lg" style="--shadow-color: #c0392b;">
+                    <i class="fas fa-save"></i> DỪNG LẠI & LƯU ĐIỂM
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA (21 ROUNDS) ---
+        const rawVocabData = [
+            {"r":1,"n":"Cấu trúc tế bào","w":[["Cell","Tế bào"],["Chloroplast","Lục lạp"],["Mitochondria","Ti thể"],["Endoplasmic reticulum","Lưới nội chất"],["Cytoplasm","Tế bào chất"],["Nucleus","Nhân tế bào"],["Cell membrane","Màng tế bào"],["Leaf parenchyma cell","Tế bào nhu mô lá"]]},
+            {"r":2,"n":"Cấu trúc lục lạp","w":[["Outer membrane","Màng ngoài"],["Inner membrane","Màng trong"],["Thylakoid membrane","Màng thylakoid"],["Stroma","Chất nền"],["Grana","Hạt grana"],["Thylakoid disk","Phiến thylakoid"],["Thylakoid lumen","Không gian thylakoid"]]},
+            {"r":3,"n":"Sắc tố quang hợp 1","w":[["Pigment","Sắc tố"],["Pigment system","Hệ sắc tố"],["Chlorophyll","Diệp lục"],["Chlorophyll a","Diệp lục a"],["Chlorophyll b","Diệp lục b"],["Carotenoid","Carotenoid"]]},
+            {"r":4,"n":"Sắc tố quang hợp 2","w":[["Carotene","Carotene"],["Xanthophyll","Xanthophyll"],["Primary pigment","Sắc tố chính"],["Accessory pigment","Sắc tố phụ"],["Reaction center","Trung tâm phản ứng"]]},
+            {"r":5,"n":"Quá trình quang hợp 1","w":[["Photosynthesis","Quang hợp"],["Light phase","Pha sáng"],["Dark phase","Pha tối"],["Photolysis of water","Quang phân ly nước"],["Calvin cycle","Chu trình Calvin"]]},
+            {"r":6,"n":"Quá trình quang hợp 2","w":[["CO2 fixation","Cố định CO2"],["CO2 reduction","Khử CO2"],["CO2 assimilation","Đồng hóa CO2"],["Acceptor regeneration","Tái sinh chất nhận"],["Acceptor","Chất nhận"]]},
+            {"r":7,"n":"Năng lượng 1","w":[["Energy","Năng lượng"],["Light energy","Quang năng"],["Chemical energy","Hóa năng"],["Thermal energy","Nhiệt năng"],["ATP","ATP"],["ADP","ADP"]]},
+            {"r":8,"n":"Năng lượng 2","w":[["NADPH","NADPH"],["NADP+","NADP+"],["Chemical bond","Liên kết hóa học"],["Electron","Electron"],["Proton","Proton"]]},
+            {"r":9,"n":"Chất hữu cơ","w":[["Organic compound","Chất hữu cơ"],["Carbohydrate","Carbohydrate"],["Glucose","Glucose"],["Protein","Protein"],["Lipid","Lipid"],["Nucleic acid","Nucleic acid"],["Amino acid","Amino acid"]]},
+            {"r":10,"n":"Nhóm thực vật","w":[["C3 plants","Thực vật C3"],["C4 plants","Thực vật C4"],["CAM plants","Thực vật CAM"],["Sun-loving plant","Cây ưa sáng"],["Shade-loving plant","Cây ưa bóng"],["Succulent plant","Cây mọng nước"]]},
+            {"r":11,"n":"Cấu trúc lá 1","w":[["Leaf","Lá"],["Stoma","Khí khổng"],["Leaf vein","Gân lá"],["Leaf surface","Bề mặt lá"],["Leaf area","Diện tích lá"]]},
+            {"r":12,"n":"Cấu trúc lá 2","w":[["Mesophyll cell","Tế bào mô giậu"],["Bundle sheath cell","Tế bào bao bó mạch"],["Epidermal cell","Tế bào biểu bì"],["Sclerenchyma","Mô khuyết"]]},
+            {"r":13,"n":"Yếu tố môi trường 1","w":[["Light","Ánh sáng"],["Light intensity","Cường độ ánh sáng"],["Wavelength","Bước sóng"],["Red light","Tia đỏ"],["Blue-violet light","Tia xanh tím"],["Monochromatic light","Ánh sáng đơn sắc"]]},
+            {"r":14,"n":"Yếu tố môi trường 2","w":[["Temperature","Nhiệt độ"],["CO2 concentration","Nồng độ CO2"],["Humidity","Độ ẩm"],["Mineral element","Nguyên tố khoáng"]]},
+            {"r":15,"n":"Khái niệm & Chỉ số","w":[["Light compensation point","Điểm bù ánh sáng"],["Light saturation point","Điểm bão hòa ánh sáng"],["CO2 compensation point","Điểm bù CO2"],["CO2 saturation point","Điểm bão hòa CO2"],["Photosynthesis intensity","Cường độ quang hợp"],["Respiration intensity","Cường độ hô hấp"],["Respiration","Hô hấp"]]},
+            {"r":16,"n":"Năng suất","w":[["Yield","Năng suất"],["Biological yield","Năng suất sinh học"],["Economic yield","Năng suất kinh tế"],["Economic coefficient","Hệ số kinh tế"],["Dry matter mass","Khối lượng chất khô"],["Economic organ","Cơ quan kinh tế"]]},
+            {"r":17,"n":"Động từ chuyên ngành 1","w":[["Synthesize","Tổng hợp"],["Absorb","Hấp thụ"],["Release","Giải phóng"],["Convert","Chuyển hóa"],["Fix","Cố định"],["Reduce","Khử"],["Oxidize","Oxy hóa"]]},
+            {"r":18,"n":"Động từ chuyên ngành 2","w":[["Diffuse","Khuếch tán"],["Transport","Vận chuyển"],["Accumulate","Tích lũy"],["Regulate","Điều hòa"],["Promote","Xúc tiến"],["Stimulate","Kích thích"],["Regenerate","Tái sinh"],["Decompose","Phân giải"]]},
+            {"r":19,"n":"Tính từ chuyên ngành","w":[["Organic","Hữu cơ"],["Inorganic","Vô cơ"],["Direct","Trực tiếp"],["Indirect","Gián tiếp"],["Dependent","Phụ thuộc"],["Independent","Độc lập"],["Excited","Kích thích"],["Ground","Bình thường"],["Favorable","Thuận lợi"],["Unfavorable","Bất lợi"]]},
+            {"r":20,"n":"Cụm từ quan trọng 1","w":[["Synthesize organic compounds","Tổng hợp chất hữu cơ"],["Raw materials","Nguyên liệu đầu vào"],["Final products","Sản phẩm cuối cùng"],["Chemical bonds","Liên kết hóa học"],["Electron transport chain","Chuỗi truyền electron"],["Proton gradient","Gradient proton"],["Greenhouse effect","Hiệu ứng nhà kính"]]},
+            {"r":21,"n":"Cụm từ quan trọng 2","w":[["Heterotrophic organisms","Sinh vật dị dưỡng"],["Autotrophic organisms","Sinh vật tự dưỡng"],["Metabolic process","Quá trình trao đổi chất"],["Physiological adaptation","Thích nghi sinh lý"],["Planting density","Mật độ trồng"],["Rational fertilization","Bón phân hợp lý"],["Proper irrigation","Tưới tiêu hợp lý"],["Appropriate care","Chăm sóc phù hợp"],["Arid environment","Môi trường khô hạn"],["Desert region","Vùng sa mạc"],["Tropical region","Vùng nhiệt đới"],["Temperate zone","Vùng ôn đới"]]}
+        ];
+
+        const roundsData = rawVocabData.map(d => ({
+            id: d.r,
+            title: `Vòng ${d.r}: ${d.n}`,
+            pairs: d.w.map(p => ({ en: p[0], vi: p[1] }))
+        }));
+
+        const EMOJIS = ['🍀','🌿','🍃','🌱','🌺','🌸','🌼','🌻','🌾','🍄','🌳','🌵','🪴'];
+
+        // --- STATE VARIABLES ---
+        let completedRounds = [];
+        let totalScore = 0;
+        let playerName = "";
+        let currentRoundObj = null;
+        let connections = []; 
+        let currentDrawing = null; 
+        let gameMode = 'en-vi'; 
+        let comboCount = 0;
+        let dotChanges = {};
+        
+        // --- AUDIO SYSTEM ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let isMusicPlaying = false;
+        let bgmInterval;
+
+        function playTone(freq, type, duration, vol) {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.type = type; osc.frequency.value = freq;
+            osc.connect(gainNode); gainNode.connect(audioCtx.destination);
+            osc.start();
+            gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        const scales = [[261.63, 293.66, 329.63, 392.00, 440.00], [220.00, 261.63, 293.66, 329.63, 392.00]];
+        function playBGMNote() {
+            if(!isMusicPlaying) return;
+            const scale = scales[Math.floor(Math.random() * scales.length)];
+            const freq = scale[Math.floor(Math.random() * scale.length)];
+            playTone(freq, 'sine', 2.5, 0.05);
+            bgmInterval = setTimeout(playBGMNote, 500 + Math.random() * 1000);
+        }
+        
+        function toggleBGM(forceState = null) {
+            isMusicPlaying = forceState !== null ? forceState : !isMusicPlaying;
+            const btn = document.getElementById('btnToggleMusic');
+            if (isMusicPlaying) {
+                if(audioCtx.state === 'suspended') audioCtx.resume();
+                btn.classList.add('text-green-500'); btn.classList.remove('text-red-500');
+                btn.innerHTML = '<i class="fas fa-music"></i>';
+                playBGMNote();
+            } else {
+                btn.classList.remove('text-green-500'); btn.classList.add('text-red-500');
+                btn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                clearTimeout(bgmInterval);
+            }
+        }
+
+        function playConnectSound() { playTone(600, 'sine', 0.1, 0.1); }
+        function playRemoveSound() { playTone(300, 'triangle', 0.15, 0.1); }
+        function playLockSound() { playTone(150, 'sawtooth', 0.3, 0.2); }
+        function playCorrectSound() { playTone(880, 'sine', 0.3, 0.1); setTimeout(()=>playTone(1108, 'sine', 0.4, 0.1), 100); }
+        function playWrongSound() { playTone(250, 'sawtooth', 0.4, 0.1); }
+        
+        // BUG FIX: Guaranteed Victory Fanfare Function
+        function playVictoryEDM() {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            
+            // Get fresh currentTime right when function is called
+            const now = audioCtx.currentTime;
+            
+            // Arpeggio progression for Victory (C5, E5, G5, C6)
+            const notes = [
+                { f: 523.25, offset: 0.0, dur: 0.15 },
+                { f: 659.25, offset: 0.15, dur: 0.15 },
+                { f: 783.99, offset: 0.30, dur: 0.15 },
+                { f: 1046.50, offset: 0.45, dur: 0.60 }
+            ];
+            
+            notes.forEach((n, index) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                // Use square/sawtooth for EDM feel
+                osc.type = (index === notes.length - 1) ? 'square' : 'sawtooth';
+                osc.frequency.value = n.f;
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                const startTime = now + n.offset;
+                osc.start(startTime);
+                
+                // Volume envelope
+                gain.gain.setValueAtTime(0, startTime);
+                gain.gain.linearRampToValueAtTime(0.15, startTime + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.001, startTime + n.dur);
+                
+                osc.stop(startTime + n.dur);
+            });
+        }
+
+        function speakWord(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US'; utterance.rate = 0.9;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // --- UTILS ---
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function showToast(msg, isSuccess = false) {
+            const toast = document.getElementById('toastMessage');
+            toast.innerText = msg;
+            if(isSuccess) {
+                toast.classList.add('success');
+                toast.classList.remove('bg-[#ff4757]');
+            } else {
+                toast.classList.remove('success');
+            }
+            toast.style.opacity = '1';
+            toast.style.transform = 'translate(-50%, 10px)';
+            setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translate(-50%, 0)'; }, 3000);
+        }
+
+        // --- LEADERBOARD ---
+        function loadLeaderboard() {
+            let lb = JSON.parse(localStorage.getItem('photosynthesis_lb_v2') || '[]');
+            const container = document.getElementById('miniLeaderboard');
+            container.innerHTML = '';
+            if(lb.length === 0) {
+                container.innerHTML = '<p class="text-gray-400 text-center">Chưa có kỷ lục nào. Hãy là người đầu tiên!</p>';
+                return;
+            }
+            lb.forEach((entry, idx) => {
+                let medals = ['🥇', '🥈', '🥉'];
+                let rank = idx < 3 ? medals[idx] : `#${idx+1}`;
+                container.innerHTML += `
+                    <div class="flex justify-between items-center bg-gray-50 px-4 py-3 rounded-xl border border-gray-100 shadow-sm text-base">
+                        <span>${rank} <b>${entry.name}</b></span>
+                        <span class="text-green-600 font-bold">${entry.score} pts</span>
+                    </div>
+                `;
+            });
+        }
+
+        function saveScore() {
+            if(totalScore <= 0 || !playerName) return;
+            let lb = JSON.parse(localStorage.getItem('photosynthesis_lb_v2') || '[]');
+            lb.push({ name: playerName, score: totalScore, date: new Date().toLocaleDateString() });
+            lb.sort((a,b) => b.score - a.score);
+            lb = lb.slice(0, 5); // Keep Top 5
+            localStorage.setItem('photosynthesis_lb_v2', JSON.stringify(lb));
+        }
+
+        // --- GAME LOGIC ---
+        document.getElementById('btnStartGame').addEventListener('click', () => {
+            const nameInput = document.getElementById('playerName').value.trim();
+            if(!nameInput) { showToast("Vui lòng nhập tên của bạn nhé!"); return; }
+            playerName = nameInput;
+            document.getElementById('displayPlayerName').innerText = playerName;
+            
+            // Unlock audio context on first user interaction
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            
+            document.getElementById('screenSplash').classList.add('hidden');
+            document.getElementById('screenRoundSelect').classList.remove('hidden');
+            document.getElementById('screenRoundSelect').classList.add('flex');
+            
+            toggleBGM(true);
+            renderRoundSelection();
+        });
+
+        document.getElementById('btnToggleMusic').addEventListener('click', () => toggleBGM());
+
+        function renderRoundSelection() {
+            const grid = document.getElementById('roundSelectGrid');
+            grid.innerHTML = '';
+            roundsData.forEach(r => {
+                const isCompleted = completedRounds.includes(r.id);
+                const btn = document.createElement('button');
+                btn.className = `p-5 rounded-2xl font-bold text-left transition-all relative overflow-hidden shadow-sm ${
+                    isCompleted ? 'bg-gray-100 text-gray-400 cursor-not-allowed border-2 border-transparent opacity-80' 
+                                : 'bg-white text-blue-700 border-2 border-blue-200 hover:border-blue-500 hover:shadow-lg hover:-translate-y-1'
+                }`;
+                btn.innerHTML = `
+                    <div class="relative z-10">
+                        <span class="block text-xl mb-1">${r.title.split(':')[0]}</span>
+                        <span class="text-sm font-semibold opacity-80">${r.title.split(':')[1] || ''}</span>
+                    </div>
+                    ${isCompleted ? '<div class="absolute inset-0 bg-white/60 z-20 flex items-center justify-center backdrop-blur-[1px]"><span class="bg-gray-800 text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wide shadow-md">Đã hoàn thành</span></div>' : ''}
+                `;
+                if(!isCompleted) btn.addEventListener('click', () => startRound(r.id));
+                grid.appendChild(btn);
+            });
+            document.getElementById('displayTotalScore').innerText = totalScore;
+        }
+
+        function startRound(id) {
+            currentRoundObj = roundsData.find(r => r.id === id);
+            gameMode = document.getElementById('gameModeSelect').value;
+            
+            document.getElementById('screenRoundSelect').classList.remove('flex');
+            document.getElementById('screenRoundSelect').classList.add('hidden');
+            document.getElementById('screenGame').classList.remove('hidden');
+            document.getElementById('screenGame').classList.add('flex');
+            
+            document.getElementById('currentRoundTitle').innerText = currentRoundObj.title;
+            
+            if(gameMode === 'en-vi') {
+                document.getElementById('colTitleA').innerHTML = 'US Tiếng Anh / English';
+                document.getElementById('colTitleA').className = "w-[45%] bg-blue-500 text-white text-center py-3 rounded-xl font-bold text-2xl shadow-md title-font tracking-wide";
+                document.getElementById('colTitleB').innerHTML = 'VN Tiếng Việt / Vietnamese';
+                document.getElementById('colTitleB').className = "w-[45%] bg-green-500 text-white text-center py-3 rounded-xl font-bold text-2xl shadow-md title-font tracking-wide";
+            } else {
+                document.getElementById('colTitleA').innerHTML = 'VN Tiếng Việt / Vietnamese';
+                document.getElementById('colTitleA').className = "w-[45%] bg-green-500 text-white text-center py-3 rounded-xl font-bold text-2xl shadow-md title-font tracking-wide";
+                document.getElementById('colTitleB').innerHTML = 'US Tiếng Anh / English';
+                document.getElementById('colTitleB').className = "w-[45%] bg-blue-500 text-white text-center py-3 rounded-xl font-bold text-2xl shadow-md title-font tracking-wide";
+            }
+
+            comboCount = 0; updateCombo();
+            renderGameArea();
+        }
+
+        function renderGameArea() {
+            const colA = document.getElementById('colA');
+            const colB = document.getElementById('colB');
+            const svg = document.getElementById('svgContainer');
+            
+            colA.innerHTML = ''; colB.innerHTML = ''; svg.innerHTML = '';
+            connections = []; currentDrawing = null; dotChanges = {};
+            const btnSubmit = document.getElementById('btnSubmit');
+            btnSubmit.disabled = true;
+            btnSubmit.classList.add('opacity-50', 'grayscale');
+
+            let itemsA = [], itemsB = [];
+            currentRoundObj.pairs.forEach((pair, index) => {
+                let textA, textB, isEnA, isEnB;
+                if(gameMode === 'en-vi') {
+                    textA = pair.en; textB = pair.vi; isEnA = true; isEnB = false;
+                } else {
+                    textA = pair.vi; textB = pair.en; isEnA = false; isEnB = true;
+                }
+                itemsA.push({ id: `p${index}`, text: textA, isEn: isEnA, wordEn: pair.en });
+                itemsB.push({ id: `p${index}`, text: textB, isEn: isEnB, wordEn: pair.en });
+            });
+
+            // Double Shuffle
+            shuffle(itemsA); shuffle(itemsB);
+
+            itemsA.forEach((item, i) => {
+                const div = document.createElement('div');
+                div.className = "card-container group";
+                let cardClass;
+                if (item.isEn) {
+                    cardClass = "vocab-card w-full bg-green-50/50 border-2 border-green-200 rounded-2xl p-4 shadow-sm flex items-center justify-between";
+                    div.innerHTML = `
+                        <div class="${cardClass}">
+                            <div class="flex items-center gap-3 w-full">
+                                <button class="text-green-600 hover:text-green-800 text-xl speaker-btn" data-word="${item.wordEn}"><i class="fas fa-volume-up"></i></button>
+                                <div class="font-bold text-green-900 text-lg flex-1 text-center">${item.text}</div>
+                            </div>
+                        </div>
+                        <div class="connect-dot dot-left" data-side="left" data-id="${item.id}" id="dot-l-${item.id}"></div>
+                    `;
+                } else {
+                    cardClass = "vocab-card w-full bg-blue-50/50 border-2 border-blue-200 rounded-2xl p-4 shadow-sm flex items-center justify-between";
+                    div.innerHTML = `
+                        <div class="${cardClass}">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-black text-xl shadow-inner">${i+1}</div>
+                                <div class="font-bold text-blue-900 text-lg">${item.text}</div>
+                            </div>
+                        </div>
+                        <div class="connect-dot dot-left" data-side="left" data-id="${item.id}" id="dot-l-${item.id}"></div>
+                    `;
+                }
+                colA.appendChild(div);
+            });
+
+            itemsB.forEach((item, i) => {
+                let randomEmoji = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+                const div = document.createElement('div');
+                div.className = "card-container group";
+                let cardClass;
+                if (item.isEn) {
+                    cardClass = "vocab-card w-full bg-green-50/50 border-2 border-green-200 rounded-2xl p-4 shadow-sm flex items-center justify-between flex-row-reverse";
+                    div.innerHTML = `
+                        <div class="${cardClass}">
+                            <div class="flex items-center gap-3 w-full flex-row-reverse">
+                                <div class="text-2xl">${randomEmoji}</div>
+                                <div class="font-bold text-green-900 text-lg flex-1 text-right">${item.text}</div>
+                                <button class="text-green-600 hover:text-green-800 text-xl speaker-btn" data-word="${item.wordEn}"><i class="fas fa-volume-up"></i></button>
+                            </div>
+                        </div>
+                        <div class="connect-dot dot-right" data-side="right" data-id="${item.id}" id="dot-r-${item.id}"></div>
+                    `;
+                } else {
+                    cardClass = "vocab-card w-full bg-blue-50/50 border-2 border-blue-200 rounded-2xl p-4 shadow-sm flex items-center justify-between flex-row-reverse";
+                    div.innerHTML = `
+                        <div class="${cardClass}">
+                            <div class="flex items-center gap-4 flex-row-reverse">
+                                <div class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-black text-xl shadow-inner">${i+1}</div>
+                                <div class="font-bold text-blue-900 text-lg">${item.text}</div>
+                            </div>
+                        </div>
+                        <div class="connect-dot dot-right" data-side="right" data-id="${item.id}" id="dot-r-${item.id}"></div>
+                    `;
+                }
+                colB.appendChild(div);
+            });
+
+            document.querySelectorAll('.speaker-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => { e.stopPropagation(); speakWord(btn.getAttribute('data-word')); });
+            });
+
+            setupDrawing();
+        }
+
+        // --- DRAWING LOGIC ---
+        function setupDrawing() {
+            const svg = document.getElementById('svgContainer');
+            const dots = document.querySelectorAll('.connect-dot');
+
+            // Reliable coordinate calc relative to SVG container
+            function getDotCenter(dot) {
+                const containerRect = svg.getBoundingClientRect();
+                const dotRect = dot.getBoundingClientRect();
+                return {
+                    x: dotRect.left - containerRect.left + dotRect.width / 2,
+                    y: dotRect.top - containerRect.top + dotRect.height / 2
+                };
+            }
+
+            function updateLines() {
+                connections.forEach(conn => {
+                    const p1 = getDotCenter(conn.source);
+                    const p2 = getDotCenter(conn.target);
+                    conn.line.setAttribute('x1', p1.x); conn.line.setAttribute('y1', p1.y);
+                    conn.line.setAttribute('x2', p2.x); conn.line.setAttribute('y2', p2.y);
+                });
+                if (currentDrawing) {
+                    const p1 = getDotCenter(currentDrawing.sourceDot);
+                    currentDrawing.line.setAttribute('x1', p1.x); currentDrawing.line.setAttribute('y1', p1.y);
+                }
+            }
+            
+            window.addEventListener('resize', updateLines);
+            window.addEventListener('scroll', updateLines, { passive: true, capture: true });
+
+            function removeConnection(lineElement) {
+                const idx = connections.findIndex(c => c.line === lineElement);
+                if (idx !== -1) {
+                    const conn = connections[idx];
+                    let srcId = conn.source.dataset.id;
+                    let tgtId = conn.target.dataset.id;
+
+                    // 1-Time Change Lock
+                    if (dotChanges[srcId] >= 1 || dotChanges[tgtId] >= 1) {
+                        playLockSound();
+                        showToast("Bạn đã hết lượt đổi đáp án cho từ này! 🔒", false);
+                        conn.line.setAttribute('stroke', '#ff4757'); 
+                        setTimeout(() => conn.line.setAttribute('stroke', '#747d8c'), 1000);
+                        return;
+                    }
+
+                    dotChanges[srcId] = (dotChanges[srcId] || 0) + 1;
+                    dotChanges[tgtId] = (dotChanges[tgtId] || 0) + 1;
+
+                    if (dotChanges[srcId] >= 1) {
+                        conn.source.classList.add('locked-dot');
+                        conn.source.innerHTML = '<i class="fas fa-lock text-[10px] text-white absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></i>';
+                    }
+                    if (dotChanges[tgtId] >= 1) {
+                        conn.target.classList.add('locked-dot');
+                        conn.target.innerHTML = '<i class="fas fa-lock text-[10px] text-white absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></i>';
+                    }
+
+                    conn.source.classList.remove('active');
+                    conn.target.classList.remove('active');
+                    svg.removeChild(lineElement);
+                    connections.splice(idx, 1);
+                    playRemoveSound();
+                    checkAllConnected();
+                }
+            }
+
+            dots.forEach(dot => {
+                dot.addEventListener('click', (e) => {
+                    const existingConn = connections.find(c => c.source === dot || c.target === dot);
+                    if (existingConn) return; 
+
+                    if (!currentDrawing) {
+                        currentDrawing = { sourceDot: dot, line: document.createElementNS('http://www.w3.org/2000/svg', 'line') };
+                        const p = getDotCenter(dot);
+                        currentDrawing.line.setAttribute('x1', p.x); currentDrawing.line.setAttribute('y1', p.y);
+                        currentDrawing.line.setAttribute('x2', p.x); currentDrawing.line.setAttribute('y2', p.y);
+                        currentDrawing.line.setAttribute('stroke', '#a4b0be');
+                        currentDrawing.line.setAttribute('stroke-width', '5');
+                        currentDrawing.line.setAttribute('stroke-dasharray', '8,6');
+                        currentDrawing.line.classList.add('connect-line');
+                        svg.appendChild(currentDrawing.line);
+                        dot.classList.add('active');
+                        playConnectSound();
+                    } else {
+                        if (currentDrawing.sourceDot.dataset.side !== dot.dataset.side) {
+                            const p2 = getDotCenter(dot);
+                            currentDrawing.line.setAttribute('x2', p2.x); currentDrawing.line.setAttribute('y2', p2.y);
+                            currentDrawing.line.setAttribute('stroke', '#747d8c');
+                            currentDrawing.line.removeAttribute('stroke-dasharray');
+                            
+                            const currentLine = currentDrawing.line;
+                            currentLine.addEventListener('click', () => removeConnection(currentLine));
+                            
+                            connections.push({ source: currentDrawing.sourceDot, target: dot, line: currentDrawing.line });
+                            dot.classList.add('active');
+                            
+                            if(isMusicPlaying) playConnectSound();
+
+                            currentDrawing = null;
+                            checkAllConnected();
+                        } else {
+                            svg.removeChild(currentDrawing.line);
+                            currentDrawing.sourceDot.classList.remove('active');
+                            currentDrawing = null;
+                        }
+                    }
+                });
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (currentDrawing) {
+                    const containerRect = svg.getBoundingClientRect();
+                    currentDrawing.line.setAttribute('x2', e.clientX - containerRect.left);
+                    currentDrawing.line.setAttribute('y2', e.clientY - containerRect.top);
+                }
+            });
+            
+            document.addEventListener('click', (e) => {
+                if (currentDrawing && !e.target.classList.contains('connect-dot')) {
+                    svg.removeChild(currentDrawing.line);
+                    currentDrawing.sourceDot.classList.remove('active');
+                    currentDrawing = null;
+                }
+            });
+        }
+
+        function checkAllConnected() {
+            const btn = document.getElementById('btnSubmit');
+            if (connections.length === currentRoundObj.pairs.length) {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'grayscale');
+                btn.classList.add('animate-bounce');
+            } else {
+                btn.disabled = true;
+                btn.classList.add('opacity-50', 'grayscale');
+                btn.classList.remove('animate-bounce');
+            }
+        }
+
+        // --- SUBMIT AND SCORE ---
+        document.getElementById('btnSubmit').addEventListener('click', async () => {
+            const btn = document.getElementById('btnSubmit');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin text-3xl"></i> ĐANG CHẤM...';
+            btn.classList.remove('animate-bounce');
+            
+            // Wake up AudioContext just in case it went to sleep
+            if(audioCtx.state === 'suspended') await audioCtx.resume();
+            
+            let roundScore = 0;
+            const reviewBoard = document.getElementById('reviewBoard');
+            reviewBoard.innerHTML = '';
+            let isPerfect = true;
+
+            for (let i = 0; i < connections.length; i++) {
+                const conn = connections[i];
+                const idLeft = conn.source.dataset.id;
+                const idRight = conn.target.dataset.id;
+                
+                const pairIndex = parseInt(idLeft.replace('p',''));
+                const realData = currentRoundObj.pairs[pairIndex];
+                let isCorrect = (idLeft === idRight);
+                
+                conn.line.setAttribute('stroke-width', '8');
+                if (isCorrect) {
+                    conn.line.setAttribute('stroke', '#2ed573');
+                    roundScore += 10;
+                    
+                    comboCount++;
+                    if(comboCount > 1) { roundScore += (comboCount * 2); updateCombo(true); } 
+                    else { updateCombo(false); }
+
+                    playCorrectSound();
+                    reviewBoard.innerHTML += `
+                        <div class="flex items-center gap-4 p-4 border-b border-green-100 bg-green-50/60 rounded-lg mb-2">
+                            <span class="text-green-500 text-2xl"><i class="fas fa-check-circle"></i></span>
+                            <div class="text-lg">
+                                <span class="font-bold text-gray-800">${realData.en}</span> = <span class="font-black text-green-700">${realData.vi}</span>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    conn.line.setAttribute('stroke', '#ff4757');
+                    isPerfect = false; comboCount = 0; updateCombo(); playWrongSound();
+                    
+                    const rightIndex = parseInt(idRight.replace('p',''));
+                    const wrongData = currentRoundObj.pairs[rightIndex];
+                    let chosenText = gameMode==='en-vi' ? wrongData.vi : wrongData.en;
+
+                    reviewBoard.innerHTML += `
+                        <div class="flex flex-col gap-2 p-4 border-b border-red-100 bg-red-50/60 rounded-lg mb-2">
+                            <div class="flex items-center gap-4">
+                                <span class="text-red-500 text-2xl"><i class="fas fa-times-circle"></i></span>
+                                <div class="text-lg">
+                                    <span class="font-bold text-gray-800 line-through opacity-60">${realData.en} = ${chosenText}</span>
+                                </div>
+                            </div>
+                            <div class="ml-10 text-green-700 font-bold text-base bg-green-100 px-3 py-1.5 rounded-md inline-block w-fit shadow-sm border border-green-200">
+                                👉 Đáp án đúng: ${realData.en} = ${realData.vi}
+                            </div>
+                        </div>
+                    `;
+                }
+                document.getElementById('scoreDisplay').innerText = totalScore + roundScore;
+                
+                // Add a small delay for animation effect
+                await new Promise(r => setTimeout(r, 400));
+            }
+            
+            // BUG FIX: Play robust Victory Fanfare precisely when the final modal opens
+            playVictoryEDM();
+            
+            totalScore += roundScore;
+            completedRounds.push(currentRoundObj.id);
+
+            document.getElementById('roundScoreFinal').innerText = `+${roundScore}`;
+            document.getElementById('totalScoreFinal').innerText = totalScore;
+            
+            const msgEl = document.getElementById('resultMsg');
+            const subMsgEl = document.getElementById('resultSubMsg');
+            if(isPerfect) {
+                msgEl.innerText = "XUẤT SẮC! 🎉"; msgEl.className = "text-5xl font-black title-font mb-2 text-yellow-500 drop-shadow-md";
+                subMsgEl.innerText = "Tuyệt vời! Bạn nối đúng 100% không sai câu nào!";
+            } else if (roundScore > (connections.length * 5)) {
+                msgEl.innerText = "RẤT TỐT! 👍"; msgEl.className = "text-5xl font-black title-font mb-2 text-blue-500 drop-shadow-md";
+                subMsgEl.innerText = "Bạn đã nắm khá vững từ vựng. Cố gắng thêm chút nữa nhé!";
+            } else {
+                msgEl.innerText = "HOÀN THÀNH! 🍀"; msgEl.className = "text-5xl font-black title-font mb-2 text-green-500 drop-shadow-md";
+                subMsgEl.innerText = "Hãy xem lại đáp án đúng ở bên dưới để ghi nhớ sâu hơn nhé!";
+            }
+
+            document.getElementById('overlayResult').classList.remove('hidden');
+            document.getElementById('overlayResult').classList.add('flex');
+            
+            btn.innerHTML = '<i class="fas fa-check-circle text-3xl"></i> CHẤM ĐIỂM / SUBMIT';
+        });
+
+        function updateCombo(animate = false) {
+            const el = document.getElementById('comboDisplay');
+            el.innerText = `x${comboCount}`;
+            if(comboCount > 1) {
+                el.classList.add('combo-flame');
+                if(animate) {
+                    el.style.transform = 'scale(1.5)';
+                    setTimeout(()=> el.style.transform = 'scale(1)', 200);
+                }
+            } else { el.classList.remove('combo-flame'); }
+        }
+
+        // --- NAVIGATION POST-GAME ---
+        document.getElementById('btnNextRound').addEventListener('click', () => {
+            document.getElementById('overlayResult').classList.add('hidden');
+            document.getElementById('overlayResult').classList.remove('flex');
+            
+            document.getElementById('screenGame').classList.add('hidden');
+            document.getElementById('screenGame').classList.remove('flex');
+            
+            document.getElementById('screenRoundSelect').classList.remove('hidden');
+            document.getElementById('screenRoundSelect').classList.add('flex');
+            
+            renderRoundSelection();
+        });
+
+        // Clean transition for Stop & Save without reloading page
+        document.getElementById('btnStopAndSave').addEventListener('click', () => {
+            saveScore();
+            loadLeaderboard();
+            
+            totalScore = 0;
+            completedRounds = [];
+            document.getElementById('playerName').value = '';
+            document.getElementById('displayTotalScore').innerText = '0';
+            
+            document.getElementById('overlayResult').classList.add('hidden');
+            document.getElementById('overlayResult').classList.remove('flex');
+            document.getElementById('screenGame').classList.add('hidden');
+            document.getElementById('screenGame').classList.remove('flex');
+            document.getElementById('screenRoundSelect').classList.add('hidden');
+            document.getElementById('screenRoundSelect').classList.remove('flex');
+            
+            document.getElementById('screenSplash').classList.remove('hidden');
+            
+            showToast("Đã lưu điểm thành công! 🏆", true);
+        });
+
+        loadLeaderboard();
+    </script>
+</body>
+</html>
