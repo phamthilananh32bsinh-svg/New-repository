@@ -1226,7 +1226,7 @@ stepCore = function () {
     return b;
   });
   function selectPdf(index){
-    const url='/resources/'+encodeURIComponent(resources[index].file);
+    const url='/New-repository/resources/'+encodeURIComponent(resources[index].file);
     frame.src=url+'#toolbar=1&navpanes=0';
     frame.title=resources[index].title;
     link.href=url;
