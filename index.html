@@ -866,7 +866,7 @@ function render(){
     var lesson=CHAPTERS.flatMap(function(ch){return ch[1]}).find(function(l){return l[0]===state.selectedLesson});
     el.innerHTML='<section class="v14-discover"><div class="v14-head"><span class="v14-tag">LESSON '+esc(state.selectedLesson)+' · PART '+state.step+' OF 4</span><h2>'+esc(STEPS[state.step-1])+'</h2><p>'+esc(lesson?lesson[1]:"")+'</p><p>Nội dung phần này đang được biên soạn. Hãy chọn Lesson 4.2 để học nội dung đã có.</p></div></section>';return;
   }
-  [stepVocab, stepLessonContentV19, stepInfographicV19, stepExam][state.step-1]();
+  [stepVocab, stepCore, stepInfographicV19, stepExam][state.step-1]();
 }
 
 
