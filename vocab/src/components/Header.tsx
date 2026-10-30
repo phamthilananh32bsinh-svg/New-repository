@@ -1,10 +1,12 @@
 import React from 'react';
-import { Volume2, VolumeX, Music, Trophy, BookOpen, Layers, PlayCircle } from 'lucide-react';
+import { Volume2, VolumeX, Music, Trophy, BookOpen, Layers, PlayCircle, CheckCircle2, PencilLine } from 'lucide-react';
 import { sound } from '../utils/soundEffects';
 
+type VocabularyTab = 'glossary' | 'flashcards' | 'game' | 'truefalse' | 'fill';
+
 interface HeaderProps {
-  currentTab: 'game' | 'flashcards' | 'glossary';
-  setCurrentTab: (tab: 'game' | 'flashcards' | 'glossary') => void;
+  currentTab: VocabularyTab;
+  setCurrentTab: (tab: VocabularyTab) => void;
   playerName: string;
   totalScore: number;
   onOpenLeaderboard: () => void;
@@ -51,43 +53,6 @@ export const Header: React.FC<HeaderProps> = ({
             </span>
           </div>
         </div>
-
-        {/* Zone 2: Navigation Links */}
-        <nav className="hidden md:flex items-center gap-1.5 lg:gap-3 text-sm font-semibold text-slate-600">
-          <button
-            onClick={() => setCurrentTab('game')}
-            className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors whitespace-nowrap ${
-              currentTab === 'game'
-                ? 'bg-emerald-50 text-emerald-800 font-bold'
-                : 'hover:text-emerald-700 hover:bg-slate-50'
-            }`}
-          >
-            <PlayCircle className="w-4 h-4 text-emerald-600" />
-            Nối Từ (22 Vòng)
-          </button>
-          <button
-            onClick={() => setCurrentTab('flashcards')}
-            className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors whitespace-nowrap ${
-              currentTab === 'flashcards'
-                ? 'bg-emerald-50 text-emerald-800 font-bold'
-                : 'hover:text-emerald-700 hover:bg-slate-50'
-            }`}
-          >
-            <Layers className="w-4 h-4 text-emerald-600" />
-            Thẻ Flashcards
-          </button>
-          <button
-            onClick={() => setCurrentTab('glossary')}
-            className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors whitespace-nowrap ${
-              currentTab === 'glossary'
-                ? 'bg-emerald-50 text-emerald-800 font-bold'
-                : 'hover:text-emerald-700 hover:bg-slate-50'
-            }`}
-          >
-            <BookOpen className="w-4 h-4 text-emerald-600" />
-            Từ Điển Thuật Ngữ
-          </button>
-        </nav>
 
         {/* Zone 3: Actions & Audio Controls */}
         <div className="flex items-center gap-2 shrink-0">
@@ -147,36 +112,31 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Mobile nav sub-bar */}
-      <div className="md:hidden flex items-center justify-around pt-2.5 mt-2 border-t border-slate-100 text-xs font-semibold">
-        <button
-          onClick={() => setCurrentTab('game')}
-          className={`flex items-center gap-1 py-1 px-2 rounded ${
-            currentTab === 'game' ? 'text-emerald-700 font-bold bg-emerald-50' : 'text-slate-600'
-          }`}
-        >
-          <PlayCircle className="w-3.5 h-3.5" />
-          Nối từ
-        </button>
-        <button
-          onClick={() => setCurrentTab('flashcards')}
-          className={`flex items-center gap-1 py-1 px-2 rounded ${
-            currentTab === 'flashcards' ? 'text-emerald-700 font-bold bg-emerald-50' : 'text-slate-600'
-          }`}
-        >
-          <Layers className="w-3.5 h-3.5" />
-          Flashcards
-        </button>
-        <button
-          onClick={() => setCurrentTab('glossary')}
-          className={`flex items-center gap-1 py-1 px-2 rounded ${
-            currentTab === 'glossary' ? 'text-emerald-700 font-bold bg-emerald-50' : 'text-slate-600'
-          }`}
-        >
-          <BookOpen className="w-3.5 h-3.5" />
-          Từ điển
-        </button>
-      </div>
+      {/* All five activities share one responsive navigation bar. */}
+      <nav aria-label="Vocabulary learning activities" className="max-w-7xl mx-auto mt-3 pt-3 border-t border-emerald-100 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+        {([
+          { tab: 'glossary', label: 'Từ điển', Icon: BookOpen },
+          { tab: 'flashcards', label: 'Thẻ từ', Icon: Layers },
+          { tab: 'game', label: 'Nối từ', Icon: PlayCircle },
+          { tab: 'truefalse', label: 'True / False', Icon: CheckCircle2 },
+          { tab: 'fill', label: 'Fill in the Blanks', Icon: PencilLine },
+        ] as const).map(({ tab, label, Icon }) => (
+          <button
+            key={tab}
+            type="button"
+            onClick={() => setCurrentTab(tab)}
+            aria-pressed={currentTab === tab}
+            className={`flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-xs sm:text-sm font-extrabold transition-colors ${
+              currentTab === tab
+                ? 'bg-emerald-700 border-emerald-700 text-white'
+                : 'bg-white border-emerald-200 text-emerald-800 hover:bg-emerald-50'
+            }`}
+          >
+            <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
+            <span>{label}</span>
+          </button>
+        ))}
+      </nav>
     </header>
   );
 };
