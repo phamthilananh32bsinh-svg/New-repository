@@ -616,6 +616,16 @@ body[data-focus-lesson="true"] #v18-lesson-strip{display:block}
 .bio42-score{font-size:2rem!important;font-weight:900;color:#0f8066}
 @media(max-width:600px){.bio42-question{padding:13px}.bio42-passage{padding:15px}.bio42-choice{padding:10px}.bio42-button{width:100%;margin:6px 0}}
 </style>
+
+<style id="bio42-part-selection-style">
+.bio42-part-picker{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin:24px 0}
+.bio42-part-card{display:flex;flex-direction:column;align-items:flex-start;gap:14px;min-height:195px;text-align:left;padding:28px;border-radius:24px;background:linear-gradient(145deg,#fff,#e9faf2);border:2px solid #9bdcc5;box-shadow:0 10px 25px rgba(27,107,88,.09);color:#176e6a;cursor:pointer;font-family:inherit}
+.bio42-part-card strong{font-size:clamp(1.15rem,2vw,1.55rem);line-height:1.3}
+.bio42-part-card span{font-size:1rem;color:#416d65}
+.bio42-part-card em{font-style:normal;font-weight:900;margin-top:auto;color:#087b65}
+.bio42-part-card:hover,.bio42-part-card:focus-visible{border-color:#1eaa86;background:#def7eb;outline-offset:3px}
+@media(max-width:650px){.bio42-part-picker{grid-template-columns:1fr}.bio42-part-card{min-height:150px;padding:20px}}
+</style>
 </head>
 <body>
 
@@ -1779,122 +1789,142 @@ const BIO42_BANK = {"passages":[{"n":1,"title":"Overview and Role of Photosynthe
 let bio42ExamSession = null;
 function bio42Shuffle(values) {
   const a = values.slice();
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
+  for (let i=a.length-1;i>0;i--) {
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
   }
   return a;
 }
-function bio42NewSession() {
-  const selected = bio42Shuffle(BIO42_BANK.passages).slice(0, 2).sort((a,b) => a.n-b.n);
-  const passageNumbers = new Set(selected.map(p => p.n));
-  const reading = BIO42_BANK.reading.filter(q => passageNumbers.has(Math.ceil(q.n / 5)));
-  const final = bio42Shuffle(BIO42_BANK.final).slice(0, 10);
-  return { selected, reading, final, answers: {}, submitted: false };
+function bio42NewSession(mode) {
+  const selected=mode==='reading' ? bio42Shuffle(BIO42_BANK.passages).slice(0,2).sort((a,b)=>a.n-b.n) : [];
+  const passageNumbers=new Set(selected.map(p=>p.n));
+  const questions=mode==='reading'
+    ? BIO42_BANK.reading.filter(q=>passageNumbers.has(Math.ceil(q.n/5)))
+    : bio42Shuffle(BIO42_BANK.final).slice(0,10);
+  return {mode,selected,questions,answers:{},submitted:false};
 }
-function bio42Question(q, kind, index) {
-  const key = kind + '-' + q.n;
-  const saved = bio42ExamSession.answers[key];
-  const done = bio42ExamSession.submitted;
-  const label = kind === 'reading' ? 'Reading' : 'Final MCQ';
-  return '<fieldset class="bio42-question"><legend>'+label+' · Question '+q.n+'</legend>'+
+function bio42ChooseMode(mode) {
+  if (!['reading','final'].includes(mode)) return;
+  if (bio42ExamSession && !bio42ExamSession.submitted &&
+      Object.keys(bio42ExamSession.answers).length &&
+      !window.confirm('Change part? Your current answers will be cleared.')) return;
+  bio42ExamSession=bio42NewSession(mode);
+  bio42DrawExam();
+}
+function bio42Question(q) {
+  const x=bio42ExamSession, saved=x.answers[q.n], done=x.submitted;
+  return '<fieldset class="bio42-question"><legend>Question '+q.n+'</legend>'+
     '<p class="bio42-question-text">'+esc(q.q)+'</p>'+
-    '<div class="bio42-choices">'+q.options.map((option, i) => {
-      const letter = 'ABCD'[i], checked = saved === letter;
-      const correct = done && letter === q.answer;
-      const incorrect = done && checked && letter !== q.answer;
-      return '<label class="bio42-choice'+(correct?' bio42-correct':'')+(incorrect?' bio42-incorrect':'')+'">'+
-        '<input type="radio" name="'+key+'" value="'+letter+'"'+(checked?' checked':'')+(done?' disabled':'')+'>'+
+    '<div class="bio42-choices">'+q.options.map((option,i)=>{
+      const letter='ABCD'[i], checked=saved===letter;
+      return '<label class="bio42-choice'+(done&&letter===q.answer?' bio42-correct':'')+
+        (done&&checked&&letter!==q.answer?' bio42-incorrect':'')+'">'+
+        '<input type="radio" name="bio42-q-'+q.n+'" value="'+letter+'"'+
+        (checked?' checked':'')+(done?' disabled':'')+'>'+
         '<span><strong>'+letter+'.</strong> '+esc(option)+'</span></label>';
     }).join('')+'</div>'+
-    (done?'<p class="bio42-answer-note">Correct answer: <strong>'+q.answer+'</strong> · '+esc(q.options['ABCD'.indexOf(q.answer)])+'</p>':'')+
-    '</fieldset>';
+    (done?'<p class="bio42-answer-note">Correct answer: <strong>'+q.answer+
+      '</strong> · '+esc(q.options['ABCD'.indexOf(q.answer)])+'</p>':'')+'</fieldset>';
 }
 function bio42DrawExam() {
-  const root = document.getElementById('step');
-  const x = bio42ExamSession;
-  if (!root || !x) return;
-  const all = [...x.reading, ...x.final];
-  const answered = all.filter(q => x.answers[(q.n <= 30 && x.reading.includes(q) ? 'reading' : 'final')+'-'+q.n]).length;
-  let html = '<section class="bio42-assessment"><header class="bio42-assessment-head">'+
+  const root=document.getElementById('step');
+  if (!root) return;
+  const x=bio42ExamSession;
+  if (!x) {
+    root.innerHTML='<section class="bio42-assessment">'+
+      '<header class="bio42-assessment-head"><span class="bio42-eyebrow">LESSON 4.2 · PHOTOSYNTHESIS IN PLANTS</span>'+
+      '<h2>🌿 Practice & Assessment</h2><p>Choose one part to practise. Each attempt has 10 questions.</p></header>'+
+      '<div class="bio42-part-picker">'+
+      '<button type="button" class="bio42-part-card" data-bio42-part="reading"><strong>📖 Part 3 · Reading Comprehension</strong>'+
+      '<span>2 randomly selected passages · 5 questions each · 10 questions</span><em>Start Part 3 →</em></button>'+
+      '<button type="button" class="bio42-part-card" data-bio42-part="final"><strong>📝 Part 4 · Multiple-Choice Questions</strong>'+
+      '<span>10 randomly selected questions from the 40-question bank</span><em>Start Part 4 →</em></button>'+
+      '</div></section>';
+    root.querySelectorAll('[data-bio42-part]').forEach(b=>b.addEventListener('click',()=>bio42ChooseMode(b.dataset.bio42Part)));
+    return;
+  }
+  const count=Object.keys(x.answers).length;
+  let html='<section class="bio42-assessment"><header class="bio42-assessment-head">'+
     '<span class="bio42-eyebrow">LESSON 4.2 · PHOTOSYNTHESIS IN PLANTS</span>'+
-    '<h2>🌿 Practice & Assessment</h2>'+
-    '<p>Part 3: 2 randomly selected reading passages (10 questions). Part 4: 10 randomly selected multiple-choice questions.</p>'+
-    '<div class="bio42-meter"><div id="bio42-meter-fill" style="width:'+(answered/20*100)+'%"></div></div>'+
-    '<p id="bio42-count" class="bio42-count">'+answered+' / 20 questions answered</p></header>';
-  html += '<section class="bio42-section"><h3>📖 Part 3 · Reading Comprehension</h3>'+
-    '<p class="bio42-hint">Read each passage carefully, then answer its five questions.</p>';
-  x.selected.forEach(p => {
-    html += '<article class="bio42-passage"><h4>Passage '+p.n+' · '+esc(p.title)+'</h4><p>'+esc(p.text)+'</p></article>';
-    x.reading.filter(q => Math.ceil(q.n/5) === p.n).forEach((q,i) => { html += bio42Question(q,'reading',i); });
-  });
-  html += '</section><section class="bio42-section"><h3>📝 Part 4 · Final Multiple-Choice Questions</h3>'+
-    '<p class="bio42-hint">Choose the best answer (A, B, C, or D).</p>';
-  x.final.forEach((q,i) => { html += bio42Question(q,'final',i); });
-  html += '</section><div class="bio42-actions" id="bio42-actions">';
-  if (x.submitted) {
-    const correctReading = x.reading.filter(q => x.answers['reading-'+q.n]===q.answer).length;
-    const correctFinal = x.final.filter(q => x.answers['final-'+q.n]===q.answer).length;
-    const total = correctReading + correctFinal;
-    html += '<div class="bio42-results" role="status"><h3>🎉 Assessment complete</h3>'+
-      '<p class="bio42-score">'+total+' / 20 · '+Math.round(total*5)+'%</p>'+
-      '<p>Part 3: '+correctReading+'/10 correct · Part 4: '+correctFinal+'/10 correct</p>'+
-      '<p>Correct answers are highlighted in green; your incorrect choices are highlighted in pink.</p></div>'+
-      '<button type="button" class="bio42-button" id="bio42-retry">🔄 Try a new random test</button>';
+    '<h2>🌿 '+(x.mode==='reading'?'Part 3 · Reading Comprehension':'Part 4 · Multiple-Choice Questions')+'</h2>'+
+    '<p>10 questions · '+(x.mode==='reading'?'Read the passages and answer five questions for each.':'Choose the best answer (A, B, C, or D).')+'</p>'+
+    '<button type="button" class="bio42-button bio42-secondary" id="bio42-back">← Choose another part</button>'+
+    '<div class="bio42-meter"><div id="bio42-meter-fill" style="width:'+(count*10)+'%"></div></div>'+
+    '<p id="bio42-count" class="bio42-count">'+count+' / 10 questions answered</p></header>';
+  if (x.mode==='reading') {
+    html+='<section class="bio42-section"><h3>📖 Part 3 · Reading Comprehension</h3>';
+    x.selected.forEach(p=>{
+      html+='<article class="bio42-passage"><h4>Passage '+p.n+' · '+esc(p.title)+'</h4><p>'+esc(p.text)+'</p></article>';
+      x.questions.filter(q=>Math.ceil(q.n/5)===p.n).forEach(q=>{html+=bio42Question(q);});
+    });
+    html+='</section>';
   } else {
-    html += '<p id="bio42-alert" class="bio42-alert" role="status"></p>'+
-      '<button type="button" class="bio42-button" id="bio42-submit">Submit all 20 answers · Nộp bài</button>'+
+    html+='<section class="bio42-section"><h3>📝 Part 4 · Final Multiple-Choice Questions</h3>';
+    x.questions.forEach(q=>{html+=bio42Question(q);});
+    html+='</section>';
+  }
+  html+='<div class="bio42-actions" id="bio42-actions">';
+  if (x.submitted) {
+    const correct=x.questions.filter(q=>x.answers[q.n]===q.answer).length;
+    html+='<div class="bio42-results" role="status"><h3>🎉 Assessment complete</h3>'+
+      '<p class="bio42-score">'+correct+' / 10 · '+(correct*10)+'%</p>'+
+      '<p>Correct answers are highlighted in green; incorrect choices in pink.</p></div>'+
+      '<button type="button" class="bio42-button" id="bio42-retry">🔄 Try another 10 questions</button>';
+  } else {
+    html+='<p id="bio42-alert" class="bio42-alert" role="status"></p>'+
+      '<button type="button" class="bio42-button" id="bio42-submit">Submit 10 answers · Nộp bài</button>'+
       '<button type="button" class="bio42-button bio42-secondary" id="bio42-reset">Start a different test</button>';
   }
-  html += '</div></section>';
-  root.innerHTML = html;
+  html+='</div></section>';
+  root.innerHTML=html;
+  document.getElementById('bio42-back').addEventListener('click',()=>{
+    if (!x.submitted && Object.keys(x.answers).length &&
+        !window.confirm('Return to part selection? Your current answers will be cleared.')) return;
+    bio42ExamSession=null;
+    bio42DrawExam();
+  });
   if (!x.submitted) {
-    root.querySelectorAll('.bio42-choice input').forEach(input => input.addEventListener('change', () => {
-      x.answers[input.name] = input.value;
-      const n = Object.keys(x.answers).length;
-      const count = document.getElementById('bio42-count');
-      const fill = document.getElementById('bio42-meter-fill');
-      if (count) count.textContent = n+' / 20 questions answered';
-      if (fill) fill.style.width = (n/20*100)+'%';
-      const alert = document.getElementById('bio42-alert');
-      if (alert) alert.textContent = '';
+    root.querySelectorAll('.bio42-choice input').forEach(input=>input.addEventListener('change',()=>{
+      x.answers[Number(input.name.replace('bio42-q-',''))]=input.value;
+      const n=Object.keys(x.answers).length;
+      document.getElementById('bio42-count').textContent=n+' / 10 questions answered';
+      document.getElementById('bio42-meter-fill').style.width=(n*10)+'%';
+      document.getElementById('bio42-alert').textContent='';
     }));
-    document.getElementById('bio42-submit').addEventListener('click', bio42Submit);
-    document.getElementById('bio42-reset').addEventListener('click', bio42Restart);
-  } else {
-    document.getElementById('bio42-retry').addEventListener('click', bio42Restart);
-  }
+    document.getElementById('bio42-submit').addEventListener('click',bio42Submit);
+    document.getElementById('bio42-reset').addEventListener('click',bio42Restart);
+  } else document.getElementById('bio42-retry').addEventListener('click',bio42Restart);
 }
 function bio42Submit() {
-  const x = bio42ExamSession;
-  const all = [...x.reading.map(q=>['reading',q]), ...x.final.map(q=>['final',q])];
-  const missing = all.filter(([kind,q]) => !x.answers[kind+'-'+q.n]);
+  const x=bio42ExamSession;
+  if (!x || x.submitted) return;
+  const missing=x.questions.filter(q=>!x.answers[q.n]);
   if (missing.length) {
-    const alert = document.getElementById('bio42-alert');
-    if (alert) alert.textContent = 'Please answer all questions before submitting. '+missing.length+' question(s) remaining.';
-    const first = document.querySelector('input[name="'+missing[0][0]+'-'+missing[0][1].n+'"]');
+    document.getElementById('bio42-alert').textContent='Please answer all 10 questions before submitting. '+missing.length+' remaining.';
+    const first=document.querySelector('input[name="bio42-q-'+missing[0].n+'"]');
     if (first) first.closest('fieldset').scrollIntoView({behavior:'smooth',block:'center'});
     return;
   }
-  const score = all.filter(([kind,q]) => x.answers[kind+'-'+q.n] === q.answer).length;
-  x.submitted = true;
-  const history = attempts();
-  history.push({score,total:20,at:new Date().toISOString()});
+  const score=x.questions.filter(q=>x.answers[q.n]===q.answer).length;
+  x.submitted=true;
+  const history=attempts();
+  history.push({score,total:10,part:x.mode==='reading'?3:4,at:new Date().toISOString()});
   store('bio42_attempts',history);
   bio42DrawExam();
-  const results = document.querySelector('.bio42-results');
+  const results=document.querySelector('.bio42-results');
   if (results) results.scrollIntoView({behavior:'smooth',block:'center'});
 }
 function bio42Restart() {
-  if (bio42ExamSession && !bio42ExamSession.submitted && Object.keys(bio42ExamSession.answers).length &&
+  const x=bio42ExamSession;
+  if (!x) return;
+  if (!x.submitted && Object.keys(x.answers).length &&
       !window.confirm('Start a new test? Your current answers will be cleared.')) return;
-  bio42ExamSession = bio42NewSession();
+  bio42ExamSession=bio42NewSession(x.mode);
   bio42DrawExam();
-  const head = document.querySelector('.bio42-assessment-head');
+  const head=document.querySelector('.bio42-assessment-head');
   if (head) head.scrollIntoView({behavior:'smooth',block:'start'});
 }
-stepExam = function() {
-  if (!bio42ExamSession || bio42ExamSession.submitted) bio42ExamSession = bio42NewSession();
+stepExam=function() {
   bio42DrawExam();
 };
 
