@@ -5,7 +5,7 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
-    base: '/vocab/',
+    base: '/New-repository/vocab/',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
